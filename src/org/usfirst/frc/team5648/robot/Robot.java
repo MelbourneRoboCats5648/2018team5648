@@ -14,12 +14,14 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DigitalOutput;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.networktables.NetworkTable;
@@ -70,6 +72,7 @@ public class Robot extends IterativeRobot {
 	
 	Relay slideRelayRelayPort;
 	Joystick joystick;
+	XboxController xboxController;
 	Talon driveLeftFront;
 	Talon driveRightFront;
 	Talon driveLeftBack;
@@ -97,7 +100,8 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Auto choices", chooser);		
 		
 		try {
-			joystick = new Joystick(usbPort);
+			//joystick = new Joystick(usbPort);
+			xboxController = new XboxController(usbPort);
 		} catch (Exception e)
 		{
 			System.err.println("Issue with joystick");
@@ -246,12 +250,20 @@ public class Robot extends IterativeRobot {
 		autoAccumulatedDistance = 0;
 		
 		// get joystick position/variables
-		double xValue = joystick.getX();
-		double yValue = joystick.getY();
-		double throttle = joystick.getThrottle();
-		double scaledThrottle = (throttle - 1)*(0.5); // limited to min of 0 and max of 1
+		// double xValue = joystick.getX();
+		// double yValue = joystick.getY();
+		// double throttle = joystick.getThrottle();
+		// double scaledThrottle = (throttle - 1)*(0.5); // limited to min of 0 and max of 1
 		
-		boolean trigger = joystick.getTrigger();
+		// boolean trigger = joystick.getTrigger();
+		
+		double xValue = xboxController.getX(Hand.kLeft);
+		double yValue = xboxController.getY(Hand.kLeft);
+		double throttle = 0.0;
+		double triggerAxis = xboxController.getTriggerAxis(Hand.kLeft);
+		double scaledThrottle = 0.5 + (triggerAxis / 2);
+		System.out.println("Scaled throtttle ttttt " + scaledThrottle);
+		boolean trigger = false;
 		
 		// update joystick values in Network Tables for display in the dashboard
 		// note that new values will not show in the Dashboard unless it is restarted
@@ -262,8 +274,8 @@ public class Robot extends IterativeRobot {
 		joystickTable.getEntry(Robot.scaledThrottle).setNumber(scaledThrottle);
 		
 		// calculate drive values - modify power by scaled throttle
-		double driveRotatation = -xValue*scaledThrottle;
-		double driveMoveValue = yValue*scaledThrottle;
+		double driveRotatation = -xValue * scaledThrottle;
+		double driveMoveValue = -yValue * scaledThrottle;
 		
 		// update motor drive values in Network Tables for display in the dashboard		
 		motorTable.getEntry(Robot.driveRotation).setNumber(driveRotatation);
