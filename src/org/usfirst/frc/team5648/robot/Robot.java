@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -29,6 +30,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -82,12 +84,15 @@ public class Robot extends IterativeRobot {
 	DigitalOutput slideRelay;
 	NetworkTable joystickTable;
 	NetworkTable motorTable;
+	int robotlocation;
+	char switchtarget;
 	// distance we estimate we have traveled
 	double autoAccumulatedDistance;
 	// how many AutoPeriodic periods have executed that we have driven forward for
 	int autoAccumulatedPeriods;
 	Spark climbingMechanism;
 	private NetworkTableInstance ntInstance;
+	Timer timer;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -100,7 +105,6 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Auto choices", chooser);		
 		
 		try {
-			//joystick = new Joystick(usbPort);
 			xboxController = new XboxController(usbPort);
 		} catch (Exception e)
 		{
@@ -189,25 +193,23 @@ public class Robot extends IterativeRobot {
 	 * SendableChooser make sure to add them to the chooser code above as well.
 	 */
 	@Override
-	public void autonomousInit() {
+	public void autonomousInit() {		
+		// start time
+		timer = new Timer();
+		timer.start();
 		
-		// enable slide relay
-		slideRelayRelayPort = new Relay(0);
-		slideRelayRelayPort.set(Value.kReverse);
+		// get robot location (1, 2, or 3)
+		DriverStation driveStation = DriverStation.getInstance();
+		driveStation.getLocation(); 
+		robotlocation = driveStation.getLocation();
 		
-		slideRelay.set(true);
+		// get alliance switch location ('R' or 'L')
+		char[] GameSpecificMessage = driveStation.getGameSpecificMessage().toCharArray();
+		switchtarget = GameSpecificMessage[0];
 		
-		/*try {
-			Thread.sleep(100);
-		} catch (Exception e) {
-			// TODO: handle exception
-		}*/
-				
+		// TODO: turn light to blue or red
+		driveStation.getAlliance();
 		
-		autoSelected = chooser.getSelected();
-		// autoSelected = SmartDashboard.getString("Auto Selector",
-		// defaultAuto);
-		System.out.println("Auto selected: " + autoSelected);
 	}
 
 	/**
@@ -216,24 +218,79 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousPeriodic() {
 		
-		// move forward 2.37 meters, for extra 5 points
-		if (autoAccumulatedDistance <= 2.37)
+		if (switchtarget == 'L') // if target is left
 		{
-			// continue driving
-			autoAccumulatedDistance += distancePerAutoPeriodic;
-			autoAccumulatedPeriods += 1;
-			DriveMotors(0.5, 0);
-		} else {
-			// stop driving
-			DriveMotors(0, 0);
-
-			slideRelay.set(false);
-			slideRelayRelayPort.set(Value.kForward);
-		}
-		
-     	motorTable.getEntry(distanceKey).setNumber(autoAccumulatedDistance);
-		motorTable.getEntry(autoPeriodKey).setNumber(autoAccumulatedPeriods); 
-		
+			// TODO: L1 Straight 427cm, turn right 90 degrees, go forward 175cm, drop cube and reverse
+			if (robotlocation == 1)
+			{
+				if(timer.get() < 427.0/distancePerSecond)
+				{
+					// motors go forward
+				}
+				else
+				{
+					if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond)
+					{
+						// turn right
+					} 
+					else
+					{
+						if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond + 175.0/distancePerSecond)
+						{
+							//go forward (super fast for dumb box!)
+							
+						}
+						else 
+						{
+							// Stop motors							
+						}
+				}
+				}
+			} 
+			// TODO: L2 Straight 135.75cm, turn left 90 degrees, straight 344cm, turn right 90 degrees, straight 245.75cm
+			if (robotlocation == 2)
+			{
+			
+			}
+			// TODO: R1 & L3 Straight 400cm
+			if (robotlocation == 3)
+			{
+				if (timer.get() < 400.0/distancePerSecond)
+				{
+					//move forward 
+				}
+				else
+				{
+					//stop motors 
+				}
+			}
+		} else { // target is right
+			// TODO: R1 & L3 Straight 400cm
+			if (robotlocation == 1)
+			{
+				if (timer.get() < 400.0/distancePerSecond)
+				{
+					//move forward 
+				}
+				else
+				{
+					//stop motors 
+				}	
+			}
+			
+			// TODO: R2 Straight 427cm
+			if (robotlocation == 2)
+			{
+				
+			}
+				
+			// TODO: R3 Straight 427cm, turn left 90 degrees, go forward 175cm, drop cube and reverse 
+			if (robotlocation == 3)
+			{
+				
+			}
+			
+		}	
 	}
 
 	private void DriveMotors(double moveValue, double rotateValue) {
@@ -249,28 +306,21 @@ public class Robot extends IterativeRobot {
 		
 		autoAccumulatedDistance = 0;
 		
-		// get joystick position/variables
-		// double xValue = joystick.getX();
-		// double yValue = joystick.getY();
-		// double throttle = joystick.getThrottle();
-		// double scaledThrottle = (throttle - 1)*(0.5); // limited to min of 0 and max of 1
-		
-		// boolean trigger = joystick.getTrigger();
-		
+		// get xbox controller position/variables		
 		double xValue = xboxController.getX(Hand.kLeft);
 		double yValue = xboxController.getY(Hand.kLeft);
 		double throttle = 0.0;
 		double triggerAxis = xboxController.getTriggerAxis(Hand.kLeft);
-		double scaledThrottle = 0.5 + (triggerAxis / 2);
+		double scaledThrottle = 0.5 + (triggerAxis / 2); // limited to min of 0 and max of 1
 		System.out.println("Scaled throtttle ttttt " + scaledThrottle);
-		boolean trigger = false;
+		boolean accelerator = false;
 		
 		// update joystick values in Network Tables for display in the dashboard
 		// note that new values will not show in the Dashboard unless it is restarted
 		joystickTable.getEntry(Robot.xValue).setNumber(xValue);
 		joystickTable.getEntry(Robot.yValue).setNumber(yValue);
 		joystickTable.getEntry(Robot.throttle).setNumber(throttle);
-		joystickTable.getEntry("climbing motor trigger").setBoolean(trigger);
+		joystickTable.getEntry("accelerate").setBoolean(accelerator);
 		joystickTable.getEntry(Robot.scaledThrottle).setNumber(scaledThrottle);
 		
 		// calculate drive values - modify power by scaled throttle
@@ -284,7 +334,7 @@ public class Robot extends IterativeRobot {
 		// send drive values to motor
 		DriveMotors(driveMoveValue, driveRotatation);
 			
-		if (trigger == true)
+		if (accelerator == true)
 		{
 			// if trigger is pressed activate climbing robot
 			climbingMechanism.set(scaledThrottle*2);
