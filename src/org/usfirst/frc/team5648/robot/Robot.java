@@ -50,8 +50,6 @@ public class Robot extends IterativeRobot {
 	private static final int usbPort = 0; // DriverStation Port
 	private static final int leftMotorPortFront = 0; // PWM port
 	private static final int rightMotorPortFront = 1; // PWM port
-	private static final int leftMotorPortBack = 2; // PWM port
-	private static final int rightMotorPortBack = 3; // PWM port
 	private static final int sparkMotorPort = 8; // PWM port
 	private static final int relayPort = 0;	// DIO port
 	
@@ -77,10 +75,7 @@ public class Robot extends IterativeRobot {
 	XboxController xboxController;
 	Talon driveLeftFront;
 	Talon driveRightFront;
-	Talon driveLeftBack;
-	Talon driveRightBack;
 	DifferentialDrive driveFront;
-	DifferentialDrive driveBack;
 	DigitalOutput slideRelay;
 	NetworkTable joystickTable;
 	NetworkTable motorTable;
@@ -92,7 +87,9 @@ public class Robot extends IterativeRobot {
 	int autoAccumulatedPeriods;
 	Spark climbingMechanism;
 	private NetworkTableInstance ntInstance;
-	Timer timer;
+	Timer timer, testTimer;
+	double distancePerSecond = 50; // cm/s travel speed in auto period
+	double rotationPerSecond = 45; // degrees/s rotation speed in auto period 
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -115,13 +112,10 @@ public class Robot extends IterativeRobot {
 		System.out.println("Robot Initialised!");
 
 		try {
-			driveLeftBack = new Talon(leftMotorPortBack);
 			driveLeftFront = new Talon(leftMotorPortFront);
-			driveRightBack = new Talon(rightMotorPortBack);
 			driveRightFront = new Talon(rightMotorPortFront);
 			
 			driveFront = new DifferentialDrive (driveLeftFront, driveRightFront);
-			driveBack = new DifferentialDrive (driveLeftBack, driveRightBack);
 		}
 		catch (Exception e)
 		{
@@ -220,82 +214,172 @@ public class Robot extends IterativeRobot {
 		
 		if (switchtarget == 'L') // if target is left
 		{
-			// TODO: L1 Straight 427cm, turn right 90 degrees, go forward 175cm, drop cube and reverse
+			// L1 Straight 427cm, turn right 90 degrees, go forward 175cm, drop cube and reverse
 			if (robotlocation == 1)
 			{
 				if(timer.get() < 427.0/distancePerSecond)
 				{
 					// motors go forward
+					DriveMotors(0.5,0);
 				}
 				else
 				{
 					if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond)
 					{
 						// turn right
+						DriveMotors(0,0.5);
 					} 
 					else
 					{
 						if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond + 175.0/distancePerSecond)
 						{
 							//go forward (super fast for dumb box!)
+							DriveMotors(1,0);
 							
 						}
 						else 
 						{
-							// Stop motors							
+							// Stop motors	
+							DriveMotors(0,0);
 						}
 				}
 				}
 			} 
-			// TODO: L2 Straight 135.75cm, turn left 90 degrees, straight 344cm, turn right 90 degrees, straight 245.75cm
+			// L2 Straight 135.75cm, turn left 90 degrees, straight 344cm, turn right 90 degrees, straight 245.75cm
 			if (robotlocation == 2)
 			{
-			
+				if (timer.get() < 135.75/distancePerSecond)
+				{
+					//move forward 
+					DriveMotors(0.5,0);
+				}
+				else
+				{
+					if (timer.get() < 90.0/rotationPerSecond + 135.75/distancePerSecond)
+					{
+						//turn left
+						DriveMotors(0,-0.5);
+					}
+					else
+					{
+						if (timer.get() < 90.0/rotationPerSecond + 135.75/distancePerSecond + 344.0/distancePerSecond)
+						{
+							//move forward
+							DriveMotors(0.5,0);
+						}
+						else
+						{
+							if (timer.get() < 90.0/rotationPerSecond + 90.0/rotationPerSecond + 135.75/distancePerSecond + 344.0/distancePerSecond)
+							{
+								//turn right 
+								DriveMotors(0,0.5);
+							}
+							else
+							{
+								if (timer.get() < 90.0/rotationPerSecond + 90.0/rotationPerSecond + 135.75/distancePerSecond + 344.0/distancePerSecond + 245.75/distancePerSecond)
+								{
+									//go forward 
+									DriveMotors(1,0);
+								}
+								else
+								{
+									//stop motors
+									DriveMotors(0,0);
+								}
+							}
+						}
+					}
+				}
 			}
-			// TODO: R1 & L3 Straight 400cm
+			// R1 & L3 Straight 400cm
 			if (robotlocation == 3)
 			{
 				if (timer.get() < 400.0/distancePerSecond)
 				{
 					//move forward 
+					DriveMotors(1,0);
 				}
 				else
 				{
 					//stop motors 
+					DriveMotors(0,0);
 				}
 			}
 		} else { // target is right
-			// TODO: R1 & L3 Straight 400cm
+			// R1 & L3 Straight 400cm
 			if (robotlocation == 1)
 			{
 				if (timer.get() < 400.0/distancePerSecond)
 				{
 					//move forward 
+					DriveMotors(1,0);
 				}
 				else
 				{
 					//stop motors 
+					DriveMotors(0,0);
 				}	
 			}
 			
-			// TODO: R2 Straight 427cm
+			// R2 Straight 427cm
 			if (robotlocation == 2)
 			{
-				
+				if (timer.get() < 427.0/distancePerSecond)
+				{
+					//move forward
+					DriveMotors(1,0);
+				}
+				else
+				{
+					//stop motors
+					DriveMotors(0,0);
+				}
 			}
 				
-			// TODO: R3 Straight 427cm, turn left 90 degrees, go forward 175cm, drop cube and reverse 
+			// R3 Straight 427cm, turn left 90 degrees, go forward 175cm, drop cube and reversing (possible extent) 
 			if (robotlocation == 3)
 			{
+				if (timer.get() < 427.0/distancePerSecond)
+				{
+					//move forward
+					DriveMotors(0.5,0);
+				}
+				else
+				{
+
+					if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond)
+					{
+						// turn left
+						DriveMotors(0,-0.5);
+					} 
+					else
+					{
+						if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond + 175.0/distancePerSecond)
+						{
+							//go forward (super fast for dumb box!)
+							DriveMotors(1,0);
+							
+						}
+						else 
+						{
+							// Stop motors	
+							DriveMotors(0,0);
+						}
+					}
+				}
 				
 			}
 			
 		}	
 	}
 
+	/**
+	 * DriveMotors will drive our robot
+	 * @param moveValue speed along X axis [-1, 1], positive is forward
+	 * @param rotateValue rotation rate [-1, 1], clockwise is positive
+	 */  		
 	private void DriveMotors(double moveValue, double rotateValue) {
 		driveFront.arcadeDrive(moveValue, rotateValue, true);
-		driveBack.arcadeDrive(moveValue, rotateValue, true);
 	}
 
 	/**
@@ -312,15 +396,13 @@ public class Robot extends IterativeRobot {
 		double throttle = 0.0;
 		double triggerAxis = xboxController.getTriggerAxis(Hand.kLeft);
 		double scaledThrottle = 0.5 + (triggerAxis / 2); // limited to min of 0 and max of 1
-		System.out.println("Scaled throtttle ttttt " + scaledThrottle);
-		boolean accelerator = false;
+		System.out.println("Scaled throttle ttttt " + scaledThrottle);
 		
 		// update joystick values in Network Tables for display in the dashboard
 		// note that new values will not show in the Dashboard unless it is restarted
 		joystickTable.getEntry(Robot.xValue).setNumber(xValue);
 		joystickTable.getEntry(Robot.yValue).setNumber(yValue);
 		joystickTable.getEntry(Robot.throttle).setNumber(throttle);
-		joystickTable.getEntry("accelerate").setBoolean(accelerator);
 		joystickTable.getEntry(Robot.scaledThrottle).setNumber(scaledThrottle);
 		
 		// calculate drive values - modify power by scaled throttle
@@ -334,15 +416,6 @@ public class Robot extends IterativeRobot {
 		// send drive values to motor
 		DriveMotors(driveMoveValue, driveRotatation);
 			
-		if (accelerator == true)
-		{
-			// if trigger is pressed activate climbing robot
-			climbingMechanism.set(scaledThrottle*2);
-		} else {
-			// if trigger is not pressed deactivate climbing robot
-			climbingMechanism.set(0);
-		}
-			
 	}
 	
 	public void disabledInit()
@@ -351,6 +424,32 @@ public class Robot extends IterativeRobot {
 		
 		// disable climbing mech
 		climbingMechanism.set(0);
+	}
+	
+	/**
+	 * This function is called once before test periodic state
+	 */
+	@Override
+	public void testInit()
+	{
+		Timer testTimer = new Timer();
+		testTimer.start();
+	}
+	
+	/**
+	 * This function is called periodically during test
+	 */
+	@Override
+	public void testPeriodic()
+	{
+		if (testTimer.get() < 10)
+		{
+			DriveMotors(0.5,0);
+		}
+		else
+		{
+			DriveMotors(0,0);
+		}
 	}
 }
 
