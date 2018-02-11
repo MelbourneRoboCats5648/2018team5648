@@ -88,8 +88,8 @@ public class Robot extends IterativeRobot {
 	Spark climbingMechanism;
 	private NetworkTableInstance ntInstance;
 	Timer timer, testTimer;
-	double distancePerSecond = 50; // cm/s travel speed in auto period
-	double rotationPerSecond = 45; // degrees/s rotation speed in auto period 
+	double distancePerSecond = 50; // cm/s travel speed in auto period TODO: CALIBRATE!!
+	double rotationPerSecond = 45; // degrees/s rotation speed in auto period TODO: CALIBRATE!!
 
 	/**
 	 * This function is run when the robot is first started up and should be
