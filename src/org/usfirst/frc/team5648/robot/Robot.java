@@ -13,12 +13,15 @@ import org.usfirst.frc.team5648.robot.subsystems.ExampleSubsystem;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalOutput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Relay.Value;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
@@ -72,6 +75,7 @@ public class Robot extends IterativeRobot {
 	SendableChooser<String> chooser = new SendableChooser<>();
 	
 	Relay slideRelayRelayPort;
+	Compressor compressor;
 	XboxController primaryController, secondaryController;
 	Talon driveLeftFront;
 	Talon driveRightFront;
@@ -91,6 +95,9 @@ public class Robot extends IterativeRobot {
 	double distancePerSecond = 50; // cm/s travel speed in auto period TODO: CALIBRATE!!
 	double rotationPerSecond = 45; // degrees/s rotation speed in auto period TODO: CALIBRATE!!
 	private boolean useSecondaryController;
+	boolean clampOpen;
+	boolean bucketPush;
+	DoubleSolenoid clampSolenoid, bucketSolenoid;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -160,6 +167,15 @@ public class Robot extends IterativeRobot {
 			System.err.println("No USB Camera detected, continuing init.");		
 		}
 		
+		try {
+			compressor = new Compressor(0);
+		}
+		catch (Exception e)
+		{
+			System.err.println("Issue with compressor");
+			throw e;
+		}
+		
 		// initialise auto values
 		autoAccumulatedDistance = 0.0;
 		autoAccumulatedPeriods = 0;
@@ -187,6 +203,9 @@ public class Robot extends IterativeRobot {
 		{
 			System.err.println("Issue creating network table entries, continuing init.");	
 		}
+		
+		clampOpen = true;
+		bucketPush = false;
 	}
 
 	/**
@@ -217,6 +236,9 @@ public class Robot extends IterativeRobot {
 		
 		// TODO: turn light to blue or red
 		driveStation.getAlliance();
+		
+		// set up air compressor, and turn on
+		compressor.setClosedLoopControl(true);
 		
 	}
 
@@ -396,19 +418,88 @@ public class Robot extends IterativeRobot {
 		driveFront.arcadeDrive(moveValue, rotateValue, true);
 	}
 
+	@Override
+	public void teleopInit() {
+		//TODO: 4 drop arms
+	}
+	
 	/**
 	 * This function is called periodically during operator control
 	 */
 	@Override
 	public void teleopPeriodic() {
 		
+		// introduce secondary controller
+		// buttons for pneumatics control
+		// TODO map solenoids to software
+		// TODO: 5 climbing mechanism control
+		
 		autoAccumulatedDistance = 0;
 		
+		drivingControl(primaryController);
+		
+		if(useSecondaryController == true)
+		{
+			pneumaticsControl(secondaryController);
+		}
+		else
+		{
+			pneumaticsControl(primaryController);
+		}
+			
+	}
+
+	private void pneumaticsControl(XboxController pneumaticsController) {
+	
+		// Clamp arms - B button
+		// beginning of time clampOpen = true
+		// if B button is pressed and clampOpen == true
+		// close clamp and set clampOpen to false
+		// if B button is press and clampOpen == false
+		// open clamp and set clampOpen to true
+		if (pneumaticsController.getBButtonPressed())
+		{
+			if (clampOpen == true)
+			{
+				// TODO close clamp
+				clampOpen = false;
+			}
+			else
+			{
+				// TODO open clamp
+				clampOpen = true;
+			}
+		}
+		
+		// Bucket - A button
+		// beginning of time bucketPush = false
+		// if a button is pressed and bucketPush == true
+		// set bucket pnuematics to retract and set bucketPush to false
+		// if A button is pressed and bucketPush == false
+		// push block and bucketPush set to true
+		if (pneumaticsController.getAButtonPressed())
+		{
+			if (bucketPush == true)
+			{
+				// TODO retract bucket 
+				bucketPush = false;
+			}
+			else
+			{
+				// TODO push bucket 
+				bucketPush = true;
+			}
+		}
+		
+		
+	}
+
+	private void drivingControl(XboxController drivingController) {
 		// get xbox controller position/variables		
-		double xValue = primaryController.getX(Hand.kLeft);
-		double yValue = primaryController.getY(Hand.kLeft);
+		double xValue = drivingController.getX(Hand.kLeft);
+		double yValue = drivingController.getY(Hand.kLeft);
 		double throttle = 0.0;
-		double triggerAxis = primaryController.getTriggerAxis(Hand.kLeft);
+		double triggerAxis = drivingController.getTriggerAxis(Hand.kLeft);
 		double scaledThrottle = 0.5 + (triggerAxis / 2); // limited to min of 0 and max of 1
 		System.out.println("Scaled throttle ttttt " + scaledThrottle);
 		
@@ -429,7 +520,6 @@ public class Robot extends IterativeRobot {
 		
 		// send drive values to motor
 		DriveMotors(driveMoveValue, driveRotatation);
-			
 	}
 	
 	public void disabledInit()
@@ -448,6 +538,9 @@ public class Robot extends IterativeRobot {
 	{
 		Timer testTimer = new Timer();
 		testTimer.start();
+				
+		clampSolenoid = new DoubleSolenoid(0,1);
+		bucketSolenoid = new DoubleSolenoid(2,3);
 	}
 	
 	/**
@@ -456,13 +549,38 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void testPeriodic()
 	{
-		if (testTimer.get() < 10)
+//		if (testTimer.get() < 10)
+//		{
+//			DriveMotors(0.5,0);
+//		}
+//		else
+//		{
+//			DriveMotors(0,0);
+//		}
+		
+
+		
+		// set up air compressor, and turn on
+		compressor.setClosedLoopControl(true);
+		
+		if (primaryController.getBButtonPressed())
 		{
-			DriveMotors(0.5,0);
+			clampSolenoid.set(DoubleSolenoid.Value.kForward);                                                        
 		}
-		else
+		
+		if (primaryController.getXButtonPressed())
 		{
-			DriveMotors(0,0);
+			clampSolenoid.set(DoubleSolenoid.Value.kReverse);
+		}
+		
+		if (primaryController.getAButtonPressed())
+		{
+			bucketSolenoid.set(DoubleSolenoid.Value.kForward);
+		}
+
+		if (primaryController.getYButtonPressed())
+		{
+			bucketSolenoid.set(DoubleSolenoid.Value.kReverse);
 		}
 	}
 }
