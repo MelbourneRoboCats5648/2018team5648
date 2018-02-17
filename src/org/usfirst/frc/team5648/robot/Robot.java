@@ -46,8 +46,9 @@ public class Robot extends IterativeRobot {
 
 	Command m_autonomousCommand;
 	SendableChooser<Command> m_chooser = new SendableChooser<>();
-	
-	private static final int usbPort = 0; // DriverStation Port
+
+	private static final int usbPort0 = 0; // DriverStation Primary Port
+	private static final int usbPort1 = 1; // DriverStation Secondary Port
 	private static final int leftMotorPortFront = 0; // PWM port
 	private static final int rightMotorPortFront = 1; // PWM port
 	private static final int sparkMotorPort = 8; // PWM port
@@ -71,8 +72,7 @@ public class Robot extends IterativeRobot {
 	SendableChooser<String> chooser = new SendableChooser<>();
 	
 	Relay slideRelayRelayPort;
-	Joystick joystick;
-	XboxController xboxController;
+	XboxController primaryController, secondaryController;
 	Talon driveLeftFront;
 	Talon driveRightFront;
 	DifferentialDrive driveFront;
@@ -90,6 +90,7 @@ public class Robot extends IterativeRobot {
 	Timer timer, testTimer;
 	double distancePerSecond = 50; // cm/s travel speed in auto period TODO: CALIBRATE!!
 	double rotationPerSecond = 45; // degrees/s rotation speed in auto period TODO: CALIBRATE!!
+	private boolean useSecondaryController;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -102,11 +103,24 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Auto choices", chooser);		
 		
 		try {
-			xboxController = new XboxController(usbPort);
+			primaryController = new XboxController(usbPort0);
 		} catch (Exception e)
 		{
-			System.err.println("Issue with joystick");
+			System.err.println("Can't find primary controller");
 			throw e;
+		}
+		
+		try {
+			secondaryController = new XboxController(usbPort1);
+			useSecondaryController = true;
+			if (secondaryController == null)
+			{
+				useSecondaryController = false;
+			}
+		} catch (Exception e)
+		{
+			System.err.println("Can't find secondary controller");
+			useSecondaryController = false;
 		}
 		
 		System.out.println("Robot Initialised!");
@@ -391,10 +405,10 @@ public class Robot extends IterativeRobot {
 		autoAccumulatedDistance = 0;
 		
 		// get xbox controller position/variables		
-		double xValue = xboxController.getX(Hand.kLeft);
-		double yValue = xboxController.getY(Hand.kLeft);
+		double xValue = primaryController.getX(Hand.kLeft);
+		double yValue = primaryController.getY(Hand.kLeft);
 		double throttle = 0.0;
-		double triggerAxis = xboxController.getTriggerAxis(Hand.kLeft);
+		double triggerAxis = primaryController.getTriggerAxis(Hand.kLeft);
 		double scaledThrottle = 0.5 + (triggerAxis / 2); // limited to min of 0 and max of 1
 		System.out.println("Scaled throttle ttttt " + scaledThrottle);
 		
