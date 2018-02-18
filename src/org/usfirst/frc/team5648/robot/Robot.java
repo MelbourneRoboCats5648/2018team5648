@@ -92,12 +92,13 @@ public class Robot extends IterativeRobot {
 	Spark climbingMechanism;
 	private NetworkTableInstance ntInstance;
 	Timer timer, testTimer;
-	double distancePerSecond = 50; // cm/s travel speed in auto period TODO: CALIBRATE!!
-	double rotationPerSecond = 45; // degrees/s rotation speed in auto period TODO: CALIBRATE!!
+	double distancePerSecond = 63.5; // cm/s travel speed in auto period 2sec @ .5 = 127cm, 4 sec @ .5 = 232cm
+	double rotationPerSecond = 63.3; // degrees/s rotation speed in auto period 1.5 sec @ .5 = 95 deg 
 	private boolean useSecondaryController;
 	boolean clampOpen;
 	boolean bucketPush;
 	DoubleSolenoid clampSolenoid, bucketSolenoid;
+	Solenoid solenoid0,	solenoid1, solenoid2, solenoid3;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -119,14 +120,17 @@ public class Robot extends IterativeRobot {
 		
 		try {
 			secondaryController = new XboxController(usbPort1);
-			useSecondaryController = true;
-			if (secondaryController == null)
-			{
-				useSecondaryController = false;
-			}
 		} catch (Exception e)
 		{
 			System.err.println("Can't find secondary controller");
+		}
+		
+		if (DriverStation.getInstance().getJoystickIsXbox(1) == true)
+		{
+			useSecondaryController = true;			
+		}
+		else 
+		{
 			useSecondaryController = false;
 		}
 		
@@ -198,11 +202,15 @@ public class Robot extends IterativeRobot {
 			joystickTable.getEntry(throttle).setNumber(0);
 			joystickTable.getEntry(scaledThrottle).setNumber(0.0);
 			joystickTable.getEntry("climbing motor trigger").setBoolean(false);
+			joystickTable.getEntry("Use Secondary Controller").setBoolean(useSecondaryController);
 		}
 		catch (Exception e)
 		{
 			System.err.println("Issue creating network table entries, continuing init.");	
 		}
+
+		clampSolenoid = new DoubleSolenoid(0,1);
+		bucketSolenoid = new DoubleSolenoid(2,3);
 		
 		clampOpen = true;
 		bucketPush = false;
@@ -256,7 +264,7 @@ public class Robot extends IterativeRobot {
 				if(timer.get() < 427.0/distancePerSecond)
 				{
 					// motors go forward
-					DriveMotors(0.5,0);
+					DriveMotors(-0.5,0.25);
 				}
 				else
 				{
@@ -270,7 +278,8 @@ public class Robot extends IterativeRobot {
 						if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond + 175.0/distancePerSecond)
 						{
 							//go forward (super fast for dumb box!)
-							DriveMotors(1,0);
+							DriveMotors(-1,0.25);
+							// TODO pneumatics
 							
 						}
 						else 
@@ -278,7 +287,7 @@ public class Robot extends IterativeRobot {
 							// Stop motors	
 							DriveMotors(0,0);
 						}
-				}
+					}
 				}
 			} 
 			// L2 Straight 135.75cm, turn left 90 degrees, straight 344cm, turn right 90 degrees, straight 245.75cm
@@ -287,7 +296,7 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 135.75/distancePerSecond)
 				{
 					//move forward 
-					DriveMotors(0.5,0);
+					DriveMotors(-0.5,0);
 				}
 				else
 				{
@@ -301,7 +310,7 @@ public class Robot extends IterativeRobot {
 						if (timer.get() < 90.0/rotationPerSecond + 135.75/distancePerSecond + 344.0/distancePerSecond)
 						{
 							//move forward
-							DriveMotors(0.5,0);
+							DriveMotors(-0.5,0.25);
 						}
 						else
 						{
@@ -315,7 +324,8 @@ public class Robot extends IterativeRobot {
 								if (timer.get() < 90.0/rotationPerSecond + 90.0/rotationPerSecond + 135.75/distancePerSecond + 344.0/distancePerSecond + 245.75/distancePerSecond)
 								{
 									//go forward 
-									DriveMotors(1,0);
+									DriveMotors(-1,0.25);
+									// TODO pneumatics
 								}
 								else
 								{
@@ -333,7 +343,8 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 400.0/distancePerSecond)
 				{
 					//move forward 
-					DriveMotors(1,0);
+					DriveMotors(-1,0.25);
+					// TODO pneumatics
 				}
 				else
 				{
@@ -348,7 +359,8 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 400.0/distancePerSecond)
 				{
 					//move forward 
-					DriveMotors(1,0);
+					DriveMotors(-1,0.25);
+					// TODO pneumatics
 				}
 				else
 				{
@@ -363,7 +375,8 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 427.0/distancePerSecond)
 				{
 					//move forward
-					DriveMotors(1,0);
+					DriveMotors(-1,0.25);
+					// TODO pneumatics
 				}
 				else
 				{
@@ -378,11 +391,10 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 427.0/distancePerSecond)
 				{
 					//move forward
-					DriveMotors(0.5,0);
+					DriveMotors(-0.5,0.25);
 				}
 				else
 				{
-
 					if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond)
 					{
 						// turn left
@@ -393,8 +405,8 @@ public class Robot extends IterativeRobot {
 						if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond + 175.0/distancePerSecond)
 						{
 							//go forward (super fast for dumb box!)
-							DriveMotors(1,0);
-							
+							DriveMotors(-1,0.25);
+							// TODO pneumatics
 						}
 						else 
 						{
@@ -420,7 +432,6 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void teleopInit() {
-		//TODO: 4 drop arms
 	}
 	
 	/**
@@ -428,14 +439,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		
-		// introduce secondary controller
-		// buttons for pneumatics control
-		// TODO map solenoids to software
-		// TODO: 5 climbing mechanism control
-		
-		autoAccumulatedDistance = 0;
-		
+	
 		drivingControl(primaryController);
 		
 		if(useSecondaryController == true)
@@ -446,6 +450,8 @@ public class Robot extends IterativeRobot {
 		{
 			pneumaticsControl(primaryController);
 		}
+	
+		// TODO: 5 climbing mechanism control
 			
 	}
 
@@ -461,12 +467,12 @@ public class Robot extends IterativeRobot {
 		{
 			if (clampOpen == true)
 			{
-				// TODO close clamp
+				clampSolenoid.set(DoubleSolenoid.Value.kReverse);      
 				clampOpen = false;
 			}
 			else
 			{
-				// TODO open clamp
+				clampSolenoid.set(DoubleSolenoid.Value.kForward);      
 				clampOpen = true;
 			}
 		}
@@ -481,12 +487,12 @@ public class Robot extends IterativeRobot {
 		{
 			if (bucketPush == true)
 			{
-				// TODO retract bucket 
+				bucketSolenoid.set(DoubleSolenoid.Value.kReverse);
 				bucketPush = false;
 			}
 			else
 			{
-				// TODO push bucket 
+				bucketSolenoid.set(DoubleSolenoid.Value.kForward);
 				bucketPush = true;
 			}
 		}
@@ -536,11 +542,21 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void testInit()
 	{
-		Timer testTimer = new Timer();
+		testTimer = new Timer();
 		testTimer.start();
 				
-		clampSolenoid = new DoubleSolenoid(0,1);
-		bucketSolenoid = new DoubleSolenoid(2,3);
+		//clampSolenoid = new DoubleSolenoid(0,1);
+		//bucketSolenoid = new DoubleSolenoid(2,3);
+
+//		solenoid0 = new Solenoid(0);
+//		solenoid1 = new Solenoid(1);
+//		solenoid2 = new Solenoid(2);
+//		solenoid3 = new Solenoid(3);
+//		
+//		solenoid0.set(false);    
+//		solenoid1.set(false);
+//		solenoid2.set(false);
+//		solenoid3.set(false);
 	}
 	
 	/**
@@ -549,39 +565,59 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void testPeriodic()
 	{
-//		if (testTimer.get() < 10)
+		if (testTimer.get() < 1.5)
+		{
+			//DriveMotors(-0.5,0.25); forward
+			DriveMotors(0, 0.5);
+		}
+		else
+		{
+			DriveMotors(0,0);
+		}
+		
+//
+//		
+//		// set up air compressor, and turn on
+//		compressor.setClosedLoopControl(true);
+//		
+//		if (primaryController.getBButtonPressed()) // clamp
 //		{
-//			DriveMotors(0.5,0);
+//			solenoid0.set(true);                                                        
 //		}
-//		else
+//		
+//		if (primaryController.getXButtonPressed()) // clamp
 //		{
-//			DriveMotors(0,0);
+//			solenoid1.set(true);
 //		}
-		
-
-		
-		// set up air compressor, and turn on
-		compressor.setClosedLoopControl(true);
-		
-		if (primaryController.getBButtonPressed())
-		{
-			clampSolenoid.set(DoubleSolenoid.Value.kForward);                                                        
-		}
-		
-		if (primaryController.getXButtonPressed())
-		{
-			clampSolenoid.set(DoubleSolenoid.Value.kReverse);
-		}
-		
-		if (primaryController.getAButtonPressed())
-		{
-			bucketSolenoid.set(DoubleSolenoid.Value.kForward);
-		}
-
-		if (primaryController.getYButtonPressed())
-		{
-			bucketSolenoid.set(DoubleSolenoid.Value.kReverse);
-		}
+//		
+//		if (primaryController.getAButtonPressed()) // bucket
+//		{
+//			solenoid2.set(true);
+//		}
+//
+//		if (primaryController.getYButtonPressed()) // bucket
+//		{
+//			solenoid3.set(true);
+//		}
+//		if (primaryController.getBButtonReleased()) // clamp
+//		{
+//			solenoid0.set(false);                                                        
+//		}
+//		
+//		if (primaryController.getXButtonReleased()) // clamp
+//		{
+//			solenoid1.set(false);
+//		}
+//		
+//		if (primaryController.getAButtonReleased()) // bucket
+//		{
+//			solenoid2.set(false);
+//		}
+//
+//		if (primaryController.getYButtonReleased()) // bucket
+//		{
+//			solenoid3.set(false);
+//		}
 	}
 }
 
