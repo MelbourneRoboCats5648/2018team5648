@@ -256,6 +256,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousPeriodic() {
 		
+		double correctionFactorForDrivingStraight = 0.25;
 		if (switchtarget == 'L') // if target is left
 		{
 			// L1 Straight 427cm, turn right 90 degrees, go forward 175cm, drop cube and reverse
@@ -264,7 +265,7 @@ public class Robot extends IterativeRobot {
 				if(timer.get() < 427.0/distancePerSecond)
 				{
 					// motors go forward
-					DriveMotors(-0.5,0.25);
+					DriveMotors(-0.5,correctionFactorForDrivingStraight);
 				}
 				else
 				{
@@ -278,7 +279,7 @@ public class Robot extends IterativeRobot {
 						if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond + 175.0/distancePerSecond)
 						{
 							//go forward (super fast for dumb box!)
-							DriveMotors(-1,0.25);
+							DriveMotors(-1,correctionFactorForDrivingStraight);
 							// TODO pneumatics
 							
 						}
@@ -296,7 +297,7 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 135.75/distancePerSecond)
 				{
 					//move forward 
-					DriveMotors(-0.5,0);
+					DriveMotors(-0.5,correctionFactorForDrivingStraight);
 				}
 				else
 				{
@@ -310,7 +311,7 @@ public class Robot extends IterativeRobot {
 						if (timer.get() < 90.0/rotationPerSecond + 135.75/distancePerSecond + 344.0/distancePerSecond)
 						{
 							//move forward
-							DriveMotors(-0.5,0.25);
+							DriveMotors(-0.5,correctionFactorForDrivingStraight);
 						}
 						else
 						{
@@ -324,7 +325,7 @@ public class Robot extends IterativeRobot {
 								if (timer.get() < 90.0/rotationPerSecond + 90.0/rotationPerSecond + 135.75/distancePerSecond + 344.0/distancePerSecond + 245.75/distancePerSecond)
 								{
 									//go forward 
-									DriveMotors(-1,0.25);
+									DriveMotors(-1,correctionFactorForDrivingStraight);
 									// TODO pneumatics
 								}
 								else
@@ -343,7 +344,7 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 400.0/distancePerSecond)
 				{
 					//move forward 
-					DriveMotors(-1,0.25);
+					DriveMotors(-1,correctionFactorForDrivingStraight);
 					// TODO pneumatics
 				}
 				else
@@ -359,7 +360,7 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 400.0/distancePerSecond)
 				{
 					//move forward 
-					DriveMotors(-1,0.25);
+					DriveMotors(-1,correctionFactorForDrivingStraight);
 					// TODO pneumatics
 				}
 				else
@@ -375,7 +376,7 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 427.0/distancePerSecond)
 				{
 					//move forward
-					DriveMotors(-1,0.25);
+					DriveMotors(-1,correctionFactorForDrivingStraight);
 					// TODO pneumatics
 				}
 				else
@@ -391,7 +392,7 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 427.0/distancePerSecond)
 				{
 					//move forward
-					DriveMotors(-0.5,0.25);
+					DriveMotors(-0.5,correctionFactorForDrivingStraight);
 				}
 				else
 				{
@@ -405,7 +406,7 @@ public class Robot extends IterativeRobot {
 						if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond + 175.0/distancePerSecond)
 						{
 							//go forward (super fast for dumb box!)
-							DriveMotors(-1,0.25);
+							DriveMotors(-1,correctionFactorForDrivingStraight);
 							// TODO pneumatics
 						}
 						else 
@@ -416,8 +417,7 @@ public class Robot extends IterativeRobot {
 					}
 				}
 				
-			}
-			
+			}			
 		}	
 	}
 
