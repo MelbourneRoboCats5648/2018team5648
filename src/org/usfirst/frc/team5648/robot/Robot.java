@@ -257,6 +257,8 @@ public class Robot extends IterativeRobot {
 	public void autonomousPeriodic() {
 		
 		double correctionFactorForDrivingStraight = 0.25;
+		double moveForwardSpeed = -0.5;
+		
 		if (switchtarget == 'L') // if target is left
 		{
 			// L1 Straight 427cm, turn right 90 degrees, go forward 175cm, drop cube and reverse
@@ -265,7 +267,7 @@ public class Robot extends IterativeRobot {
 				if(timer.get() < 427.0/distancePerSecond)
 				{
 					// motors go forward
-					DriveMotors(-0.5,correctionFactorForDrivingStraight);
+					DriveMotors(moveForwardSpeed,correctionFactorForDrivingStraight);
 				}
 				else
 				{
@@ -279,8 +281,8 @@ public class Robot extends IterativeRobot {
 						if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond + 175.0/distancePerSecond)
 						{
 							//go forward (super fast for dumb box!)
-							DriveMotors(-1,correctionFactorForDrivingStraight);
-							// TODO pneumatics
+							DriveMotors(moveForwardSpeed,correctionFactorForDrivingStraight);
+							bucketSolenoid.set(DoubleSolenoid.Value.kForward);
 							
 						}
 						else 
@@ -297,7 +299,7 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 135.75/distancePerSecond)
 				{
 					//move forward 
-					DriveMotors(-0.5,correctionFactorForDrivingStraight);
+					DriveMotors(moveForwardSpeed,correctionFactorForDrivingStraight);
 				}
 				else
 				{
@@ -311,7 +313,7 @@ public class Robot extends IterativeRobot {
 						if (timer.get() < 90.0/rotationPerSecond + 135.75/distancePerSecond + 344.0/distancePerSecond)
 						{
 							//move forward
-							DriveMotors(-0.5,correctionFactorForDrivingStraight);
+							DriveMotors(moveForwardSpeed,correctionFactorForDrivingStraight);
 						}
 						else
 						{
@@ -325,8 +327,8 @@ public class Robot extends IterativeRobot {
 								if (timer.get() < 90.0/rotationPerSecond + 90.0/rotationPerSecond + 135.75/distancePerSecond + 344.0/distancePerSecond + 245.75/distancePerSecond)
 								{
 									//go forward 
-									DriveMotors(-1,correctionFactorForDrivingStraight);
-									// TODO pneumatics
+									DriveMotors(moveForwardSpeed,correctionFactorForDrivingStraight);
+									bucketSolenoid.set(DoubleSolenoid.Value.kForward);
 								}
 								else
 								{
@@ -344,8 +346,8 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 400.0/distancePerSecond)
 				{
 					//move forward 
-					DriveMotors(-1,correctionFactorForDrivingStraight);
-					// TODO pneumatics
+					DriveMotors(moveForwardSpeed,correctionFactorForDrivingStraight);
+					bucketSolenoid.set(DoubleSolenoid.Value.kForward);
 				}
 				else
 				{
@@ -360,8 +362,8 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 400.0/distancePerSecond)
 				{
 					//move forward 
-					DriveMotors(-1,correctionFactorForDrivingStraight);
-					// TODO pneumatics
+					DriveMotors(moveForwardSpeed,correctionFactorForDrivingStraight);
+					bucketSolenoid.set(DoubleSolenoid.Value.kForward);
 				}
 				else
 				{
@@ -376,8 +378,8 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 427.0/distancePerSecond)
 				{
 					//move forward
-					DriveMotors(-1,correctionFactorForDrivingStraight);
-					// TODO pneumatics
+					DriveMotors(moveForwardSpeed,correctionFactorForDrivingStraight);
+					bucketSolenoid.set(DoubleSolenoid.Value.kForward);
 				}
 				else
 				{
@@ -392,7 +394,7 @@ public class Robot extends IterativeRobot {
 				if (timer.get() < 427.0/distancePerSecond)
 				{
 					//move forward
-					DriveMotors(-0.5,correctionFactorForDrivingStraight);
+					DriveMotors(moveForwardSpeed,correctionFactorForDrivingStraight);
 				}
 				else
 				{
@@ -406,8 +408,8 @@ public class Robot extends IterativeRobot {
 						if (timer.get() < 90.0/rotationPerSecond + 427.0/distancePerSecond + 175.0/distancePerSecond)
 						{
 							//go forward (super fast for dumb box!)
-							DriveMotors(-1,correctionFactorForDrivingStraight);
-							// TODO pneumatics
+							DriveMotors(moveForwardSpeed,correctionFactorForDrivingStraight);
+							bucketSolenoid.set(DoubleSolenoid.Value.kForward);
 						}
 						else 
 						{
@@ -452,7 +454,27 @@ public class Robot extends IterativeRobot {
 		}
 	
 		// TODO: 5 climbing mechanism control
+		if (useSecondaryController == true)
+		{
+			climbingControl(secondaryController);
+		}
+		else
+		{
+			climbingControl(primaryController);
+		}
 			
+	}
+
+	private void climbingControl(XboxController climbingController) {
+		if (climbingController.getPOV() == 0)
+		{
+			// winch up
+		}
+		
+		if (climbingController.getPOV() == 180)
+		{
+			// winch down
+		}
 	}
 
 	private void pneumaticsControl(XboxController pneumaticsController) {
@@ -517,8 +539,8 @@ public class Robot extends IterativeRobot {
 		joystickTable.getEntry(Robot.scaledThrottle).setNumber(scaledThrottle);
 		
 		// calculate drive values - modify power by scaled throttle
-		double driveRotatation = -xValue * scaledThrottle;
-		double driveMoveValue = -yValue * scaledThrottle;
+		double driveRotatation = xValue * scaledThrottle;
+		double driveMoveValue = yValue * scaledThrottle;
 		
 		// update motor drive values in Network Tables for display in the dashboard		
 		motorTable.getEntry(Robot.driveRotation).setNumber(driveRotatation);
