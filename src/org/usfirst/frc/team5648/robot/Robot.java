@@ -418,7 +418,6 @@ public class Robot extends IterativeRobot {
 						}
 					}
 				}
-				
 			}			
 		}	
 	}
@@ -429,6 +428,10 @@ public class Robot extends IterativeRobot {
 	 * @param rotateValue rotation rate [-1, 1], clockwise is positive
 	 */  		
 	private void DriveMotors(double moveValue, double rotateValue) {
+		if (moveValue > 0.9)
+		{			
+			moveValue = 0.9;
+		}
 		driveFront.arcadeDrive(moveValue, rotateValue, true);
 	}
 
@@ -518,8 +521,6 @@ public class Robot extends IterativeRobot {
 				bucketPush = true;
 			}
 		}
-		
-		
 	}
 
 	private void drivingControl(XboxController drivingController) {
@@ -528,7 +529,7 @@ public class Robot extends IterativeRobot {
 		double yValue = drivingController.getY(Hand.kLeft);
 		double throttle = 0.0;
 		double triggerAxis = drivingController.getTriggerAxis(Hand.kLeft);
-		double scaledThrottle = 0.5 + (triggerAxis / 2); // limited to min of 0 and max of 1
+		double scaledThrottle = 0.5 + (triggerAxis*0.4); // limited to min of 0 and max of 1
 		System.out.println("Scaled throttle ttttt " + scaledThrottle);
 		
 		// update joystick values in Network Tables for display in the dashboard
@@ -566,19 +567,6 @@ public class Robot extends IterativeRobot {
 	{
 		testTimer = new Timer();
 		testTimer.start();
-				
-		//clampSolenoid = new DoubleSolenoid(0,1);
-		//bucketSolenoid = new DoubleSolenoid(2,3);
-
-//		solenoid0 = new Solenoid(0);
-//		solenoid1 = new Solenoid(1);
-//		solenoid2 = new Solenoid(2);
-//		solenoid3 = new Solenoid(3);
-//		
-//		solenoid0.set(false);    
-//		solenoid1.set(false);
-//		solenoid2.set(false);
-//		solenoid3.set(false);
 	}
 	
 	/**
@@ -596,50 +584,6 @@ public class Robot extends IterativeRobot {
 		{
 			DriveMotors(0,0);
 		}
-		
-//
-//		
-//		// set up air compressor, and turn on
-//		compressor.setClosedLoopControl(true);
-//		
-//		if (primaryController.getBButtonPressed()) // clamp
-//		{
-//			solenoid0.set(true);                                                        
-//		}
-//		
-//		if (primaryController.getXButtonPressed()) // clamp
-//		{
-//			solenoid1.set(true);
-//		}
-//		
-//		if (primaryController.getAButtonPressed()) // bucket
-//		{
-//			solenoid2.set(true);
-//		}
-//
-//		if (primaryController.getYButtonPressed()) // bucket
-//		{
-//			solenoid3.set(true);
-//		}
-//		if (primaryController.getBButtonReleased()) // clamp
-//		{
-//			solenoid0.set(false);                                                        
-//		}
-//		
-//		if (primaryController.getXButtonReleased()) // clamp
-//		{
-//			solenoid1.set(false);
-//		}
-//		
-//		if (primaryController.getAButtonReleased()) // bucket
-//		{
-//			solenoid2.set(false);
-//		}
-//
-//		if (primaryController.getYButtonReleased()) // bucket
-//		{
-//			solenoid3.set(false);
-//		}
 	}
 }
 
