@@ -209,6 +209,7 @@ public class Robot extends IterativeRobot {
 			System.err.println("Issue creating network table entries, continuing init.");	
 		}
 
+		// TODO check solenoid, button assignment
 		clampSolenoid = new DoubleSolenoid(0,1);
 		bucketSolenoid = new DoubleSolenoid(2,3);
 		
@@ -245,6 +246,10 @@ public class Robot extends IterativeRobot {
 		// TODO: turn light to blue or red
 		driveStation.getAlliance();
 		
+		// ensure pneumatics set to starting state before compressor turns on 
+		clampSolenoid.set(DoubleSolenoid.Value.kReverse); 
+		bucketSolenoid.set(DoubleSolenoid.Value.kReverse);
+				
 		// set up air compressor, and turn on
 		compressor.setClosedLoopControl(true);
 		
